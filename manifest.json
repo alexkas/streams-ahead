@@ -10,7 +10,8 @@
   "permissions": [
     "activeTab",
     "tabs",
-    "*://*.imdb.com/title/*"
+    "*://*.imdb.com/title/*",
+    "*://*.trakt.tv/*"
   ],
   "page_action": {
     "default_icon": {

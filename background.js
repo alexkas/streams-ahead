@@ -4,6 +4,32 @@ const tabData = {};
 // Cache resolved titles: { imdbId: title }
 const titleCache = {};
 
+// Cache episode → series IMDB ID lookups
+const episodeToSeriesCache = {};
+
+/**
+ * Given an episode's IMDB ID, fetch its IMDB page and find the series' IMDB ID.
+ * The series link is typically the first /title/tt link that isn't the episode itself.
+ */
+async function resolveEpisodeToSeries(episodeId) {
+  if (episodeToSeriesCache[episodeId])
+    return episodeToSeriesCache[episodeId];
+  try {
+    const res = await fetch(`https://www.imdb.com/title/${episodeId}/`, {
+      headers: { "Accept-Language": "en-US,en;q=0.9" },
+    });
+    const html = await res.text();
+    const matches = html.matchAll(/\/title\/(tt\d+)/g);
+    for (const m of matches) {
+      if (m[1] !== episodeId) {
+        episodeToSeriesCache[episodeId] = m[1];
+        return m[1];
+      }
+    }
+  } catch {}
+  return null;
+}
+
 /**
  * Fetch the title for an IMDB ID by scraping the IMDB page's <title> tag.
  * Results are cached so each ID is only fetched once.
@@ -58,6 +84,11 @@ browser.runtime.onMessage.addListener((message, sender) => {
         });
       }
     });
+  } else if (message.action === "resolveEpisodeToSeries") {
+    // Return a promise so the content script gets the result
+    return resolveEpisodeToSeries(message.episodeImdbId).then(
+      (seriesId) => ({ seriesId })
+    );
   } else if (message.action === "imdbCleared" && sender.tab) {
     const tabId = sender.tab.id;
     delete tabData[tabId];

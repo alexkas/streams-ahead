@@ -3,6 +3,9 @@
  * "type" is "movie" or "series" for the stremio:// protocol.
  */
 
+// Cache for async series lookups (Trakt episode → series IMDB ID)
+const seriesCache = {};
+
 const extractors = [
   {
     // IMDB — ID is right in the URL
@@ -11,13 +14,23 @@ const extractors = [
       const match = location.pathname.match(/\/title\/(tt\d+)/);
       if (!match) return null;
       const imdbId = match[1];
-      // Detect type from the page's schema markup or subtext
+      // Detect type from the page's schema markup
       const schemaEl = document.querySelector('script[type="application/ld+json"]');
       let type = "movie";
       if (schemaEl) {
         try {
           const schema = JSON.parse(schemaEl.textContent);
-          if (schema["@type"] === "TVSeries") type = "series";
+          if (schema["@type"] === "TVSeries") {
+            type = "series";
+          } else if (schema["@type"] === "TVEpisode") {
+            // Episode page — find the series' IMDB ID from the page links
+            const links = document.querySelectorAll('a[href*="/title/tt"]');
+            for (const link of links) {
+              const m = link.href.match(/(tt\d+)/);
+              if (m && m[1] !== imdbId) return { imdbId: m[1], type: "series" };
+            }
+            return null;
+          }
         } catch {}
       }
       return { imdbId, type };
@@ -28,13 +41,54 @@ const extractors = [
     host: "trakt.tv",
     extract() {
       const type = location.pathname.startsWith("/shows/") ? "series" : "movie";
-      // Trakt puts the IMDB link in the external links sidebar
+      const isSubPage = /\/shows\/[^/]+\/seasons\//.test(location.pathname);
+
+      if (isSubPage) {
+        // On season/episode pages, the IMDB links point to the episode,
+        // not the series — Stremio needs the series ID.
+        // Try data attributes which may be series-level.
+        const dataImdb = document.querySelector("[data-imdb-id]");
+        if (dataImdb) {
+          return { imdbId: dataImdb.getAttribute("data-imdb-id"), type };
+        }
+        // Get the episode IMDB link (which IS in the DOM) and ask the
+        // background script to resolve it to the series via IMDB's page.
+        const imdbLink = document.querySelector(
+          'a[href*="imdb.com/title/tt"]'
+        );
+        if (imdbLink) {
+          const epMatch = imdbLink.href.match(/(tt\d+)/);
+          if (epMatch) {
+            const episodeId = epMatch[1];
+            if (seriesCache[episodeId]) {
+              return { imdbId: seriesCache[episodeId], type };
+            }
+            if (!seriesCache[episodeId + ":pending"]) {
+              seriesCache[episodeId + ":pending"] = true;
+              browser.runtime
+                .sendMessage({
+                  action: "resolveEpisodeToSeries",
+                  episodeImdbId: episodeId,
+                })
+                .then(({ seriesId }) => {
+                  if (seriesId) {
+                    seriesCache[episodeId] = seriesId;
+                    run();
+                  }
+                })
+                .catch(() => {});
+            }
+          }
+        }
+        return null;
+      }
+
+      // Series/movie page — IMDB link in the external links sidebar
       const imdbLink = document.querySelector('a[href*="imdb.com/title/tt"]');
       if (imdbLink) {
         const match = imdbLink.href.match(/(tt\d+)/);
         if (match) return { imdbId: match[1], type };
       }
-      // Fallback: Trakt sometimes embeds IMDB in data attributes
       const dataImdb = document.querySelector("[data-imdb-id]");
       if (dataImdb) {
         return { imdbId: dataImdb.getAttribute("data-imdb-id"), type };
@@ -107,15 +161,17 @@ function run() {
   let result = null;
 
   // Try site-specific extractor first
+  let hasExtractor = false;
   for (const extractor of extractors) {
     if (hostname.includes(extractor.host)) {
+      hasExtractor = true;
       result = extractor.extract();
       if (result) break;
     }
   }
 
-  // Fallback: scan links
-  if (!result) result = fallbackScan();
+  // Fallback: scan links (only on sites without a dedicated extractor)
+  if (!result && !hasExtractor) result = fallbackScan();
 
   if (result && result.imdbId !== lastSentId) {
     lastSentId = result.imdbId;
