@@ -23,8 +23,7 @@
     {
       "matches": [
         "*://*.imdb.com/title/*",
-        "*://*.trakt.tv/movies/*",
-        "*://*.trakt.tv/shows/*",
+        "*://*.trakt.tv/*",
         "*://*.letterboxd.com/film/*",
         "*://*.themoviedb.org/movie/*",
         "*://*.themoviedb.org/tv/*",
