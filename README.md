@@ -10,10 +10,9 @@ When you visit a movie or show page on one of the supported sites, Streams Ahead
 
 | Site | What's detected |
 |---|---|
-| [IMDB](https://www.imdb.com) | Title pages (`/title/tt...`) |
-| [Trakt](https://trakt.tv) | Movie and show pages |
+| [IMDB](https://www.imdb.com) | Title pages, including episodes (resolves to series) |
+| [Trakt](https://trakt.tv) | Movie, show, and episode pages (resolves to series) |
 | [Letterboxd](https://letterboxd.com) | Film pages |
-| [TMDB](https://www.themoviedb.org) | Movie and TV pages |
 | [Simkl](https://simkl.com) | Movie and TV pages |
 
 Any page on these sites that has an IMDB link will also get picked up by the fallback scanner. That's five sites. I've been with more sites than that in a single weekend. I'm talking about websites. What did you think I meant?
@@ -37,6 +36,7 @@ Some of these sites, like Trakt, use something called "Turbolinks" where the pag
 ## Permissions
 
 - **activeTab / tabs** - to see what page you're on and show the button. That's it. I'm not spying on you. I've done a lot of things I'm not proud of, but browser surveillance isn't one of them.
-- **imdb.com** - to fetch the title name for the tooltip
+- **imdb.com** - to fetch the title name for the tooltip, and to resolve episode pages to their parent series
+- **trakt.tv** - to resolve episode pages to their parent series via IMDB
 
 No data is collected or sent anywhere. Unlike my moist towelette empire, this is a non-profit operation. The only network request is a fetch to IMDB to get the title name, and the results are cached in memory. I don't even know what you're watching. I don't care. Unless it's one of the films I executive produced, in which case, you're welcome.
