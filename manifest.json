@@ -26,8 +26,6 @@
         "*://*.imdb.com/title/*",
         "*://*.trakt.tv/*",
         "*://*.letterboxd.com/film/*",
-        "*://*.themoviedb.org/movie/*",
-        "*://*.themoviedb.org/tv/*",
         "*://*.simkl.com/*"
       ],
       "js": ["content.js"],

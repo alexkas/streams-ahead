@@ -112,19 +112,6 @@ const extractors = [
     },
   },
   {
-    // TMDB — IMDB ID is in the external IDs section or social links
-    host: "themoviedb.org",
-    extract() {
-      const type = location.pathname.startsWith("/tv/") ? "series" : "movie";
-      const imdbLink = document.querySelector('a[href*="imdb.com/title/tt"]');
-      if (imdbLink) {
-        const match = imdbLink.href.match(/(tt\d+)/);
-        if (match) return { imdbId: match[1], type };
-      }
-      return null;
-    },
-  },
-  {
     // Simkl
     host: "simkl.com",
     extract() {
