@@ -18,7 +18,10 @@ async function resolveTitle(imdbId) {
     const match = html.match(/<title>(.+?)<\/title>/i);
     if (match) {
       // IMDB titles look like "Breaking Bad (TV Series 2008–2013) - IMDb"
-      const clean = match[1]
+      const decoded = new DOMParser()
+        .parseFromString(match[1], "text/html")
+        .documentElement.textContent;
+      const clean = decoded
         .replace(/\s*[-–—]\s*IMDb.*$/i, "")
         .trim();
       if (clean) {
