@@ -1,0 +1,48 @@
+{
+  "manifest_version": 2,
+  "name": "Streams Ahead",
+  "version": "1.0.0",
+  "description": "Detects movies and shows on IMDB, Trakt, Letterboxd and more - one click to open in Stremio.",
+  "icons": {
+    "48": "icons/icon-48.png",
+    "96": "icons/icon-96.png"
+  },
+  "permissions": [
+    "activeTab",
+    "tabs",
+    "*://*.imdb.com/title/*"
+  ],
+  "page_action": {
+    "default_icon": {
+      "48": "icons/icon-48.png"
+    },
+    "default_title": "Open in Stremio",
+    "show_matches": ["*://*.stremio-launcher-never-match.invalid/*"]
+  },
+  "content_scripts": [
+    {
+      "matches": [
+        "*://*.imdb.com/title/*",
+        "*://*.trakt.tv/movies/*",
+        "*://*.trakt.tv/shows/*",
+        "*://*.letterboxd.com/film/*",
+        "*://*.themoviedb.org/movie/*",
+        "*://*.themoviedb.org/tv/*",
+        "*://*.simkl.com/movies/*",
+        "*://*.simkl.com/tv/*"
+      ],
+      "js": ["content.js"],
+      "run_at": "document_idle"
+    }
+  ],
+  "background": {
+    "scripts": ["background.js"]
+  },
+  "browser_specific_settings": {
+    "gecko": {
+      "data_collection_permissions": {
+        "required": ["none"]
+      }
+    }
+  }
+}
