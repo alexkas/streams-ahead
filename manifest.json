@@ -27,8 +27,7 @@
         "*://*.letterboxd.com/film/*",
         "*://*.themoviedb.org/movie/*",
         "*://*.themoviedb.org/tv/*",
-        "*://*.simkl.com/movies/*",
-        "*://*.simkl.com/tv/*"
+        "*://*.simkl.com/*"
       ],
       "js": ["content.js"],
       "run_at": "document_idle"
