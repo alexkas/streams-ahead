@@ -124,6 +124,9 @@ function run() {
       imdbId: result.imdbId,
       type: result.type,
     });
+  } else if (!result && lastSentId) {
+    lastSentId = null;
+    browser.runtime.sendMessage({ action: "imdbCleared" });
   }
 }
 
@@ -137,8 +140,7 @@ function watchForNavigation() {
   // 1. Turbolinks / Turbo specific events (Trakt uses this)
   for (const event of ["turbolinks:load", "turbo:load", "turbo:render"]) {
     document.addEventListener(event, () => {
-      lastSentId = null;
-      run();
+      onSpaNavigation();
       setTimeout(run, 800);
     });
   }
@@ -168,10 +170,15 @@ function watchForNavigation() {
 function onUrlChange() {
   if (location.href === lastUrl) return;
   lastUrl = location.href;
-  lastSentId = null;
-  // Small delay to let the new DOM settle
-  setTimeout(run, 300);
+  onSpaNavigation();
+  // Extra retry for slow-loading content
   setTimeout(run, 1200);
+}
+
+function onSpaNavigation() {
+  // Don't eagerly clear — let run() handle showing/hiding
+  // to avoid flicker from duplicate navigation events (pushState + turbolinks)
+  setTimeout(run, 300);
 }
 
 // Initial run + retries for slow-loading content

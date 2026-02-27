@@ -58,6 +58,10 @@ browser.runtime.onMessage.addListener((message, sender) => {
         });
       }
     });
+  } else if (message.action === "imdbCleared" && sender.tab) {
+    const tabId = sender.tab.id;
+    delete tabData[tabId];
+    browser.pageAction.hide(tabId);
   }
 });
 
