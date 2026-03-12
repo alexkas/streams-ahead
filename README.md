@@ -15,7 +15,7 @@ When you visit a movie or show page on one of the supported sites, Streams Ahead
 | [Letterboxd](https://letterboxd.com) | Film pages |
 | [Simkl](https://simkl.com) | Movie and TV pages |
 
-Any page on these sites that has an IMDB link will also get picked up by the fallback scanner. That's five sites. I've been with more sites than that in a single weekend. I'm talking about websites. What did you think I meant?
+Any page on these sites that has an IMDB link will also get picked up by the fallback scanner. That's four sites. I've been with more sites than that in a single weekend. I'm talking about websites. What did you think I meant?
 
 ## Install
 
